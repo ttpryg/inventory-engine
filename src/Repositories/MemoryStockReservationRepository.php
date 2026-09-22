@@ -30,18 +30,20 @@ class MemoryStockReservationRepository implements StockReservationRepositoryInte
                 $result[] = $r;
             }
         }
+
         return $result;
     }
 
     public function findExpiredActiveReservations(): array
     {
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable;
         $result = [];
         foreach ($this->reservations as $r) {
             if ($r->status === ReservationStatus::ACTIVE && $now > $r->expiresAt) {
                 $result[] = $r;
             }
         }
+
         return $result;
     }
 }

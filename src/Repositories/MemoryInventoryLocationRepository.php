@@ -27,6 +27,7 @@ class MemoryInventoryLocationRepository implements InventoryLocationRepositoryIn
                 return $loc;
             }
         }
+
         return null;
     }
 
@@ -37,6 +38,7 @@ class MemoryInventoryLocationRepository implements InventoryLocationRepositoryIn
                 return $loc;
             }
         }
+
         return null;
     }
 
@@ -44,8 +46,10 @@ class MemoryInventoryLocationRepository implements InventoryLocationRepositoryIn
     {
         if (isset($this->locations[$id])) {
             unset($this->locations[$id]);
+
             return true;
         }
+
         return false;
     }
 }

@@ -16,10 +16,10 @@ class InventoryServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $locationRepo = new MemoryInventoryLocationRepository();
-        $stockRepo = new MemoryInventoryStockRepository();
-        $reservationRepo = new MemoryStockReservationRepository();
-        $movementRepo = new MemoryStockMovementRepository();
+        $locationRepo = new MemoryInventoryLocationRepository;
+        $stockRepo = new MemoryInventoryStockRepository;
+        $reservationRepo = new MemoryStockReservationRepository;
+        $movementRepo = new MemoryStockMovementRepository;
 
         $this->service = new InventoryService(
             $locationRepo,
@@ -29,7 +29,7 @@ class InventoryServiceTest extends TestCase
         );
     }
 
-    public function testReserveAndCommitStockFlow(): void
+    public function test_reserve_and_commit_stock_flow(): void
     {
         $this->service->createLocation(id: 'loc-1', locationType: 'warehouse', locationId: 'wh-jkt', name: 'Gudang Jakarta', code: 'WH-JKT');
         $stock = $this->service->initializeStock(
@@ -65,7 +65,7 @@ class InventoryServiceTest extends TestCase
         $this->assertEquals(ReservationStatus::COMMITTED, $reservation->status);
     }
 
-    public function testTransferStockBetweenLocations(): void
+    public function test_transfer_stock_between_locations(): void
     {
         $this->service->createLocation(id: 'loc-1', locationType: 'warehouse', locationId: 'wh-jkt', name: 'Gudang Jakarta', code: 'WH-JKT');
         $this->service->createLocation(id: 'loc-2', locationType: 'store', locationId: 'store-a', name: 'Toko A', code: 'STORE-A');

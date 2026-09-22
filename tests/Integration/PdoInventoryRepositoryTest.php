@@ -12,7 +12,9 @@ use Ttpryg\InventoryEngine\Repositories\PdoInventoryStockRepository;
 class PdoInventoryRepositoryTest extends TestCase
 {
     private PDO $pdo;
+
     private PdoInventoryLocationRepository $locationRepo;
+
     private PdoInventoryStockRepository $stockRepo;
 
     protected function setUp(): void
@@ -20,14 +22,14 @@ class PdoInventoryRepositoryTest extends TestCase
         $this->pdo = new PDO('sqlite::memory:');
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $schema = file_get_contents(__DIR__ . '/../../database/schema.sql');
+        $schema = file_get_contents(__DIR__.'/../../database/schema.sql');
         $this->pdo->exec($schema);
 
         $this->locationRepo = new PdoInventoryLocationRepository($this->pdo);
         $this->stockRepo = new PdoInventoryStockRepository($this->pdo);
     }
 
-    public function testSaveAndFindLocation(): void
+    public function test_save_and_find_location(): void
     {
         $location = new InventoryLocation(
             id: 'loc-sqlite-1',
@@ -50,7 +52,7 @@ class PdoInventoryRepositoryTest extends TestCase
         $this->assertEquals('WH-MAIN', $fetchedByLocation->code);
     }
 
-    public function testSaveAndFindStock(): void
+    public function test_save_and_find_stock(): void
     {
         $stock = new InventoryStock(
             id: 'stock-sqlite-1',

@@ -25,6 +25,7 @@ class MemoryStockMovementRepository implements StockMovementRepositoryInterface
                 $filtered[] = $m;
             }
         }
+
         return array_slice($filtered, $offset, $limit);
     }
 
@@ -36,6 +37,7 @@ class MemoryStockMovementRepository implements StockMovementRepositoryInterface
                 $filtered[] = $m;
             }
         }
+
         return array_slice($filtered, $offset, $limit);
     }
 }
