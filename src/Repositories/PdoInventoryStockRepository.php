@@ -11,29 +11,48 @@ class PdoInventoryStockRepository implements InventoryStockRepositoryInterface
 {
     public function __construct(private readonly PDO $pdo) {}
 
-    public function save(InventoryStock $stock): void
-    {
-        $existing = $this->findById($stock->id);
-
-        $sql = $existing instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock
-            ? 'UPDATE inventory_stocks SET location_type = :location_type, location_id = :location_id, product_id = :product_id, variant_id = :variant_id, sku = :sku, quantity_on_hand = :quantity_on_hand, quantity_reserved = :quantity_reserved, min_stock_alert = :min_stock_alert, updated_at = :updated_at WHERE id = :id'
-            : 'INSERT INTO inventory_stocks (id, location_type, location_id, product_id, variant_id, sku, quantity_on_hand, quantity_reserved, min_stock_alert, created_at, updated_at) VALUES (:id, :location_type, :location_id, :product_id, :variant_id, :sku, :quantity_on_hand, :quantity_reserved, :min_stock_alert, :created_at, :updated_at)';
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'id' => $stock->id,
-            'location_type' => $stock->locationType,
-            'location_id' => $stock->locationId,
-            'product_id' => $stock->productId,
-            'variant_id' => $stock->variantId,
-            'sku' => $stock->sku,
-            'quantity_on_hand' => $stock->quantityOnHand,
-            'quantity_reserved' => $stock->quantityReserved,
-            'min_stock_alert' => $stock->minStockAlert,
-            'created_at' => $stock->createdAt->format('Y-m-d H:i:s'),
-            'updated_at' => $stock->updatedAt->format('Y-m-d H:i:s'),
-        ]);
-    }
+    public function save(InventoryStock $stock): void                                                                                        
+    {                                                                                                                                        
+        $existing = $this->findById($stock->id);                                                                                             
+                                                                                                                                             
+        if ($existing instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock) {                                                          
+            $sql = 'UPDATE inventory_stocks SET location_type = :location_type, location_id = :location_id, product_id = :product_id,        
+variant_id = :variant_id, sku = :sku, quantity_on_hand = :quantity_on_hand, quantity_reserved = :quantity_reserved, min_stock_alert =          
+:min_stock_alert, updated_at = :updated_at WHERE id = :id';                                                                                    
+            $params = [                                                                                                                      
+                'id' => $stock->id,                                                                                                          
+                'location_type' => $stock->locationType,                                                                                     
+                'location_id' => $stock->locationId,                                                                                         
+                'product_id' => $stock->productId,                                                                                           
+                'variant_id' => $stock->variantId,                                                                                           
+                'sku' => $stock->sku,                                                                                                        
+                'quantity_on_hand' => $stock->quantityOnHand,                                                                                
+                'quantity_reserved' => $stock->quantityReserved,                                                                             
+                'min_stock_alert' => $stock->minStockAlert,                                                                                  
+                'updated_at' => $stock->updatedAt->format('Y-m-d H:i:s'),                                                                    
+            ];                                                                                                                               
+        } else {                                                                                                                             
+            $sql = 'INSERT INTO inventory_stocks (id, location_type, location_id, product_id, variant_id, sku, quantity_on_hand,             
+quantity_reserved, min_stock_alert, created_at, updated_at) VALUES (:id, :location_type, :location_id, :product_id, :variant_id, :sku,         
+:quantity_on_hand, :quantity_reserved, :min_stock_alert, :created_at, :updated_at)';                                                           
+            $params = [                                                                                                                      
+                'id' => $stock->id,                                                                                                          
+                'location_type' => $stock->locationType,                                                                                     
+                'location_id' => $stock->locationId,                                                                                         
+                'product_id' => $stock->productId,                                                                                           
+                'variant_id' => $stock->variantId,                                                                                           
+                'sku' => $stock->sku,                                                                                                        
+                'quantity_on_hand' => $stock->quantityOnHand,                                                                                
+                'quantity_reserved' => $stock->quantityReserved,                                                                             
+                'min_stock_alert' => $stock->minStockAlert,                                                                                  
+                'created_at' => $stock->createdAt->format('Y-m-d H:i:s'),                                                                    
+                'updated_at' => $stock->updatedAt->format('Y-m-d H:i:s'),                                                                    
+            ];                                                                                                                               
+        }                                                                                                                                    
+                                                                                                                                             
+        $stmt = $this->pdo->prepare($sql);                                                                                                   
+        $stmt->execute($params);                                                                                                             
+    } 
 
     public function findById(string $id): ?InventoryStock
     {
