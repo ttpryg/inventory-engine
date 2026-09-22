@@ -1,0 +1,48 @@
+{
+    "name": "ttpryg/inventory-engine",
+    "description": "Framework-agnostic PHP 8.1+ Multi-Warehouse, Stock Reservation, and Inventory Movement Engine",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Toto",
+            "email": "totoprayogo1916@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "ext-pdo": "*",
+        "ttpryg/event-dispatcher": "^1.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.20",
+        "phpunit/phpunit": "^10.0",
+        "rector/rector": "^2.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ttpryg\\InventoryEngine\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ttpryg\\InventoryEngine\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "fix": [
+            "vendor/bin/rector process",
+            "vendor/bin/pint"
+        ],
+        "fix:check": [
+            "vendor/bin/rector process --dry-run",
+            "vendor/bin/pint --test"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
