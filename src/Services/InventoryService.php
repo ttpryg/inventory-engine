@@ -49,6 +49,7 @@ class InventoryService
         );
 
         $this->locationRepo->save($location);
+
         return $location;
     }
 
@@ -79,7 +80,7 @@ class InventoryService
 
         if ($initialQuantity > 0) {
             $movement = new StockMovement(
-                id: 'mov-' . uniqid(),
+                id: 'mov-'.uniqid(),
                 inventoryStockId: $stock->id,
                 locationType: $locationType,
                 locationId: $locationId,
@@ -106,7 +107,7 @@ class InventoryService
         int $ttlMinutes = 15
     ): StockReservation {
         $stock = $this->stockRepo->findByLocationAndProduct($locationType, $locationId, $productId, $variantId);
-        if (!$stock instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock) {
+        if (! $stock instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock) {
             throw new RuntimeException("Stock record not found for product {$productId} at location {$locationType}:{$locationId}");
         }
 
@@ -124,13 +125,13 @@ class InventoryService
             referenceId: $referenceId,
             quantity: $quantity,
             status: ReservationStatus::ACTIVE,
-            expiresAt: (new DateTimeImmutable())->modify("+{$ttlMinutes} minutes")
+            expiresAt: (new DateTimeImmutable)->modify("+{$ttlMinutes} minutes")
         );
 
         $this->reservationRepo->save($reservation);
 
         $movement = new StockMovement(
-            id: 'mov-' . uniqid(),
+            id: 'mov-'.uniqid(),
             inventoryStockId: $stock->id,
             locationType: $locationType,
             locationId: $locationId,
@@ -149,24 +150,24 @@ class InventoryService
     public function commitReservation(string $reservationId, ?string $actorId = null): void
     {
         $reservation = $this->reservationRepo->findById($reservationId);
-        if (!$reservation instanceof \Ttpryg\InventoryEngine\Entities\StockReservation || $reservation->status !== ReservationStatus::ACTIVE) {
+        if (! $reservation instanceof \Ttpryg\InventoryEngine\Entities\StockReservation || $reservation->status !== ReservationStatus::ACTIVE) {
             throw new RuntimeException("Reservation {$reservationId} is not active or not found");
         }
 
         $stock = $this->stockRepo->findById($reservation->inventoryStockId);
-        if (!$stock instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock) {
-            throw new RuntimeException("Inventory stock record not found");
+        if (! $stock instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock) {
+            throw new RuntimeException('Inventory stock record not found');
         }
 
         $stock->commit($reservation->quantity);
         $this->stockRepo->save($stock);
 
         $reservation->status = ReservationStatus::COMMITTED;
-        $reservation->updatedAt = new DateTimeImmutable();
+        $reservation->updatedAt = new DateTimeImmutable;
         $this->reservationRepo->save($reservation);
 
         $movement = new StockMovement(
-            id: 'mov-' . uniqid(),
+            id: 'mov-'.uniqid(),
             inventoryStockId: $stock->id,
             locationType: $stock->locationType,
             locationId: $stock->locationId,
@@ -188,7 +189,7 @@ class InventoryService
     public function releaseReservation(string $reservationId, ?string $actorId = null): void
     {
         $reservation = $this->reservationRepo->findById($reservationId);
-        if (!$reservation instanceof \Ttpryg\InventoryEngine\Entities\StockReservation || $reservation->status !== ReservationStatus::ACTIVE) {
+        if (! $reservation instanceof \Ttpryg\InventoryEngine\Entities\StockReservation || $reservation->status !== ReservationStatus::ACTIVE) {
             return;
         }
 
@@ -198,7 +199,7 @@ class InventoryService
             $this->stockRepo->save($stock);
 
             $movement = new StockMovement(
-                id: 'mov-' . uniqid(),
+                id: 'mov-'.uniqid(),
                 inventoryStockId: $stock->id,
                 locationType: $stock->locationType,
                 locationId: $stock->locationId,
@@ -212,7 +213,7 @@ class InventoryService
         }
 
         $reservation->status = ReservationStatus::RELEASED;
-        $reservation->updatedAt = new DateTimeImmutable();
+        $reservation->updatedAt = new DateTimeImmutable;
         $this->reservationRepo->save($reservation);
 
         $this->eventDispatcher?->dispatch(new StockReleasedEvent($reservation));
@@ -222,26 +223,26 @@ class InventoryService
         string $locationType,
         string $locationId,
         string $productId,
-        int $deltaQuantity,
+        int $quantity,
         ?string $variantId = null,
         ?string $note = null,
         ?string $actorId = null
     ): InventoryStock {
         $stock = $this->stockRepo->findByLocationAndProduct($locationType, $locationId, $productId, $variantId);
-        if (!$stock instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock) {
-            throw new RuntimeException("Stock record not found for adjustment");
+        if (! $stock instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock) {
+            throw new RuntimeException('Stock record not found for adjustment');
         }
 
-        $stock->adjust($deltaQuantity);
+        $stock->adjust($quantity);
         $this->stockRepo->save($stock);
 
         $movement = new StockMovement(
-            id: 'mov-' . uniqid(),
+            id: 'mov-'.uniqid(),
             inventoryStockId: $stock->id,
             locationType: $locationType,
             locationId: $locationId,
             type: MovementType::ADJUSTMENT,
-            quantity: $deltaQuantity,
+            quantity: $quantity,
             note: $note,
             actorId: $actorId
         );
@@ -268,14 +269,14 @@ class InventoryService
         ?string $actorId = null
     ): void {
         $sourceStock = $this->stockRepo->findByLocationAndProduct($fromLocationType, $fromLocationId, $productId, $variantId);
-        if (!$sourceStock instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock || $sourceStock->getQuantityAvailable() < $quantity) {
-            throw new RuntimeException("Insufficient available stock at source location to transfer");
+        if (! $sourceStock instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock || $sourceStock->getQuantityAvailable() < $quantity) {
+            throw new RuntimeException('Insufficient available stock at source location to transfer');
         }
 
         $targetStock = $this->stockRepo->findByLocationAndProduct($toLocationType, $toLocationId, $productId, $variantId);
-        if (!$targetStock instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock) {
+        if (! $targetStock instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock) {
             $targetStock = $this->initializeStock(
-                id: 'stk-' . uniqid(),
+                id: 'stk-'.uniqid(),
                 locationType: $toLocationType,
                 locationId: $toLocationId,
                 productId: $productId,
@@ -293,24 +294,24 @@ class InventoryService
 
         // Record movements for source and target
         $this->movementRepo->record(new StockMovement(
-            id: 'mov-' . uniqid(),
+            id: 'mov-'.uniqid(),
             inventoryStockId: $sourceStock->id,
             locationType: $fromLocationType,
             locationId: $fromLocationId,
             type: MovementType::TRANSFER,
             quantity: -$quantity,
-            note: "Transfer to {$toLocationType}:{$toLocationId} - " . ($note ?? ''),
+            note: "Transfer to {$toLocationType}:{$toLocationId} - ".($note ?? ''),
             actorId: $actorId
         ));
 
         $this->movementRepo->record(new StockMovement(
-            id: 'mov-' . uniqid(),
+            id: 'mov-'.uniqid(),
             inventoryStockId: $targetStock->id,
             locationType: $toLocationType,
             locationId: $toLocationId,
             type: MovementType::TRANSFER,
             quantity: $quantity,
-            note: "Transfer from {$fromLocationType}:{$fromLocationId} - " . ($note ?? ''),
+            note: "Transfer from {$fromLocationType}:{$fromLocationId} - ".($note ?? ''),
             actorId: $actorId
         ));
     }

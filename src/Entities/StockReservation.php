@@ -20,13 +20,14 @@ class StockReservation
         public ?DateTimeImmutable $createdAt = null,
         public ?DateTimeImmutable $updatedAt = null
     ) {
-        $this->createdAt = $createdAt ?? new DateTimeImmutable();
-        $this->updatedAt = $updatedAt ?? new DateTimeImmutable();
+        $this->createdAt = $createdAt ?? new DateTimeImmutable;
+        $this->updatedAt = $updatedAt ?? new DateTimeImmutable;
     }
 
     public function isExpired(?DateTimeImmutable $now = null): bool
     {
-        $now ??= new DateTimeImmutable();
+        $now ??= new DateTimeImmutable;
+
         return $this->status === ReservationStatus::ACTIVE && $now > $this->expiresAt;
     }
 }

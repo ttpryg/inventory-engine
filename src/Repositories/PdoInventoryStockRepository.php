@@ -16,8 +16,8 @@ class PdoInventoryStockRepository implements InventoryStockRepositoryInterface
         $existing = $this->findById($stock->id);
 
         $sql = $existing instanceof \Ttpryg\InventoryEngine\Entities\InventoryStock
-            ? "UPDATE inventory_stocks SET location_type = :location_type, location_id = :location_id, product_id = :product_id, variant_id = :variant_id, sku = :sku, quantity_on_hand = :quantity_on_hand, quantity_reserved = :quantity_reserved, min_stock_alert = :min_stock_alert, updated_at = :updated_at WHERE id = :id"
-            : "INSERT INTO inventory_stocks (id, location_type, location_id, product_id, variant_id, sku, quantity_on_hand, quantity_reserved, min_stock_alert, created_at, updated_at) VALUES (:id, :location_type, :location_id, :product_id, :variant_id, :sku, :quantity_on_hand, :quantity_reserved, :min_stock_alert, :created_at, :updated_at)";
+            ? 'UPDATE inventory_stocks SET location_type = :location_type, location_id = :location_id, product_id = :product_id, variant_id = :variant_id, sku = :sku, quantity_on_hand = :quantity_on_hand, quantity_reserved = :quantity_reserved, min_stock_alert = :min_stock_alert, updated_at = :updated_at WHERE id = :id'
+            : 'INSERT INTO inventory_stocks (id, location_type, location_id, product_id, variant_id, sku, quantity_on_hand, quantity_reserved, min_stock_alert, created_at, updated_at) VALUES (:id, :location_type, :location_id, :product_id, :variant_id, :sku, :quantity_on_hand, :quantity_reserved, :min_stock_alert, :created_at, :updated_at)';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
@@ -37,7 +37,7 @@ class PdoInventoryStockRepository implements InventoryStockRepositoryInterface
 
     public function findById(string $id): ?InventoryStock
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM inventory_stocks WHERE id = :id");
+        $stmt = $this->pdo->prepare('SELECT * FROM inventory_stocks WHERE id = :id');
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -46,7 +46,7 @@ class PdoInventoryStockRepository implements InventoryStockRepositoryInterface
 
     public function findByLocationAndProduct(string $locationType, string $locationId, string $productId, ?string $variantId = null): ?InventoryStock
     {
-        $sql = "SELECT * FROM inventory_stocks WHERE location_type = :location_type AND location_id = :location_id AND product_id = :product_id";
+        $sql = 'SELECT * FROM inventory_stocks WHERE location_type = :location_type AND location_id = :location_id AND product_id = :product_id';
         $params = [
             'location_type' => $locationType,
             'location_id' => $locationId,
@@ -54,10 +54,10 @@ class PdoInventoryStockRepository implements InventoryStockRepositoryInterface
         ];
 
         if ($variantId !== null) {
-            $sql .= " AND variant_id = :variant_id";
+            $sql .= ' AND variant_id = :variant_id';
             $params['variant_id'] = $variantId;
         } else {
-            $sql .= " AND variant_id IS NULL";
+            $sql .= ' AND variant_id IS NULL';
         }
 
         $stmt = $this->pdo->prepare($sql);
@@ -69,11 +69,11 @@ class PdoInventoryStockRepository implements InventoryStockRepositoryInterface
 
     public function findByProduct(string $productId, ?string $variantId = null): array
     {
-        $sql = "SELECT * FROM inventory_stocks WHERE product_id = :product_id";
+        $sql = 'SELECT * FROM inventory_stocks WHERE product_id = :product_id';
         $params = ['product_id' => $productId];
 
         if ($variantId !== null) {
-            $sql .= " AND variant_id = :variant_id";
+            $sql .= ' AND variant_id = :variant_id';
             $params['variant_id'] = $variantId;
         }
 
@@ -85,16 +85,17 @@ class PdoInventoryStockRepository implements InventoryStockRepositoryInterface
         foreach ($rows as $row) {
             $result[] = $this->mapToEntity($row);
         }
+
         return $result;
     }
 
     public function findLowStockItems(?string $locationType = null, ?string $locationId = null): array
     {
-        $sql = "SELECT * FROM inventory_stocks WHERE (quantity_on_hand - quantity_reserved) <= min_stock_alert";
+        $sql = 'SELECT * FROM inventory_stocks WHERE (quantity_on_hand - quantity_reserved) <= min_stock_alert';
         $params = [];
 
         if ($locationType !== null && $locationId !== null) {
-            $sql .= " AND location_type = :location_type AND location_id = :location_id";
+            $sql .= ' AND location_type = :location_type AND location_id = :location_id';
             $params['location_type'] = $locationType;
             $params['location_id'] = $locationId;
         }
@@ -107,23 +108,24 @@ class PdoInventoryStockRepository implements InventoryStockRepositoryInterface
         foreach ($rows as $row) {
             $result[] = $this->mapToEntity($row);
         }
+
         return $result;
     }
 
     private function mapToEntity(array $row): InventoryStock
     {
         return new InventoryStock(
-            id: (string)$row['id'],
-            locationType: (string)$row['location_type'],
-            locationId: (string)$row['location_id'],
-            productId: (string)$row['product_id'],
+            id: (string) $row['id'],
+            locationType: (string) $row['location_type'],
+            locationId: (string) $row['location_id'],
+            productId: (string) $row['product_id'],
             variantId: $row['variant_id'] ?? null,
             sku: $row['sku'] ?? null,
-            quantityOnHand: (int)$row['quantity_on_hand'],
-            quantityReserved: (int)$row['quantity_reserved'],
-            minStockAlert: (int)($row['min_stock_alert'] ?? 5),
-            createdAt: !empty($row['created_at']) ? new DateTimeImmutable($row['created_at']) : null,
-            updatedAt: !empty($row['updated_at']) ? new DateTimeImmutable($row['updated_at']) : null
+            quantityOnHand: (int) $row['quantity_on_hand'],
+            quantityReserved: (int) $row['quantity_reserved'],
+            minStockAlert: (int) ($row['min_stock_alert'] ?? 5),
+            createdAt: ! empty($row['created_at']) ? new DateTimeImmutable($row['created_at']) : null,
+            updatedAt: ! empty($row['updated_at']) ? new DateTimeImmutable($row['updated_at']) : null
         );
     }
 }

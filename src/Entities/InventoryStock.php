@@ -21,8 +21,8 @@ class InventoryStock
         public ?DateTimeImmutable $createdAt = null,
         public ?DateTimeImmutable $updatedAt = null
     ) {
-        $this->createdAt = $createdAt ?? new DateTimeImmutable();
-        $this->updatedAt = $updatedAt ?? new DateTimeImmutable();
+        $this->createdAt = $createdAt ?? new DateTimeImmutable;
+        $this->updatedAt = $updatedAt ?? new DateTimeImmutable;
     }
 
     public function getQuantityAvailable(): int
@@ -38,25 +38,25 @@ class InventoryStock
     public function reserve(int $quantity): void
     {
         $this->quantityReserved += $quantity;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     public function commit(int $quantity): void
     {
         $this->quantityReserved = max(0, $this->quantityReserved - $quantity);
         $this->quantityOnHand = max(0, $this->quantityOnHand - $quantity);
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     public function release(int $quantity): void
     {
         $this->quantityReserved = max(0, $this->quantityReserved - $quantity);
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 
     public function adjust(int $delta): void
     {
         $this->quantityOnHand += $delta;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 }

@@ -29,6 +29,7 @@ class MemoryInventoryStockRepository implements InventoryStockRepositoryInterfac
                 }
             }
         }
+
         return null;
     }
 
@@ -42,6 +43,7 @@ class MemoryInventoryStockRepository implements InventoryStockRepositoryInterfac
                 }
             }
         }
+
         return $result;
     }
 
@@ -55,6 +57,7 @@ class MemoryInventoryStockRepository implements InventoryStockRepositoryInterfac
                 }
             }
         }
+
         return $result;
     }
 }
