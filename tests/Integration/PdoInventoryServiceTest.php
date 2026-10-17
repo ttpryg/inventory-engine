@@ -3,6 +3,7 @@
 namespace Ttpryg\InventoryEngine\Tests\Integration;
 
 use DateTimeImmutable;
+use RuntimeException;
 use Ttpryg\InventoryEngine\Entities\InventoryStock;
 use Ttpryg\InventoryEngine\Enums\ReservationStatus;
 use Ttpryg\InventoryEngine\Exceptions\InsufficientStockException;
@@ -13,6 +14,7 @@ use Ttpryg\InventoryEngine\Repositories\PdoStockMovementRepository;
 use Ttpryg\InventoryEngine\Repositories\PdoStockReservationRepository;
 use Ttpryg\InventoryEngine\Repositories\PdoTransactionManager;
 use Ttpryg\InventoryEngine\Services\InventoryService;
+use Ttpryg\InventoryEngine\Tests\Support\FailingStockMovementRepository;
 
 class PdoInventoryServiceTest extends PdoTestCase
 {
@@ -258,5 +260,90 @@ class PdoInventoryServiceTest extends PdoTestCase
 
         $this->assertFalse($reservation->isExpired());
         $this->assertGreaterThan(new DateTimeImmutable, $reservation->expiresAt);
+    }
+
+    public function test_transfer_rolls_back_when_recording_fails_midway(): void
+    {
+        $this->stockRepo->save(new InventoryStock(
+            id: 'stk-src',
+            locationType: 'warehouse',
+            locationId: 'wh-jkt',
+            productId: 'prod-300',
+            quantityOnHand: 100
+        ));
+
+        $service = new InventoryService(
+            new PdoInventoryLocationRepository($this->pdo),
+            $this->stockRepo,
+            $this->reservationRepo,
+            new FailingStockMovementRepository,
+            null,
+            new PdoTransactionManager($this->pdo)
+        );
+
+        try {
+            $service->transferStock(
+                productId: 'prod-300',
+                fromLocationType: 'warehouse',
+                fromLocationId: 'wh-jkt',
+                toLocationType: 'store',
+                toLocationId: 'store-a',
+                quantity: 30
+            );
+            $this->fail('Expected RuntimeException from failing movement repository');
+        } catch (RuntimeException $exception) {
+            $this->assertEquals('Simulated stock movement failure', $exception->getMessage());
+        }
+
+        $sourceStock = $this->stockRepo->findByLocationAndProduct('warehouse', 'wh-jkt', 'prod-300');
+        $this->assertNotNull($sourceStock);
+        $this->assertEquals(100, $sourceStock->quantityOnHand);
+
+        $targetStock = $this->stockRepo->findByLocationAndProduct('store', 'store-a', 'prod-300');
+        $this->assertNull($targetStock);
+
+        $this->assertFalse($this->pdo->inTransaction());
+    }
+
+    public function test_reserve_rolls_back_when_recording_fails(): void
+    {
+        $this->stockRepo->save(new InventoryStock(
+            id: 'stk-1',
+            locationType: 'warehouse',
+            locationId: 'wh-jkt',
+            productId: 'prod-100',
+            quantityOnHand: 50
+        ));
+
+        $service = new InventoryService(
+            new PdoInventoryLocationRepository($this->pdo),
+            $this->stockRepo,
+            $this->reservationRepo,
+            new FailingStockMovementRepository,
+            null,
+            new PdoTransactionManager($this->pdo)
+        );
+
+        try {
+            $service->reserveStock(
+                reservationId: 'res-1',
+                locationType: 'warehouse',
+                locationId: 'wh-jkt',
+                productId: 'prod-100',
+                quantity: 10,
+                referenceType: 'order',
+                referenceId: 'order-99'
+            );
+            $this->fail('Expected RuntimeException from failing movement repository');
+        } catch (RuntimeException $exception) {
+            $this->assertEquals('Simulated stock movement failure', $exception->getMessage());
+        }
+
+        $stock = $this->stockRepo->findById('stk-1');
+        $this->assertNotNull($stock);
+        $this->assertEquals(50, $stock->quantityOnHand);
+        $this->assertEquals(0, $stock->quantityReserved);
+        $this->assertNull($this->reservationRepo->findById('res-1'));
+        $this->assertFalse($this->pdo->inTransaction());
     }
 }
