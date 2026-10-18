@@ -6,4 +6,4 @@ namespace Ttpryg\InventoryEngine\Exceptions;
 
 use RuntimeException;
 
-class InventoryException extends RuntimeException {}
+class InventoryException extends RuntimeException implements ExceptionInterface {}
